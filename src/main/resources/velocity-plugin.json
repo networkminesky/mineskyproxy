@@ -1,0 +1,11 @@
+{
+  "id": "mineskyproxy",
+  "name": "MineSkyProxy",
+  "version": "${version}",
+  "main": "net.mineskyproxy.MineSkyProxy",
+  "desciption": "Plugin para funções gerais de Proxy",
+  "authors": [
+    "Bruno C.",
+    "Drawn"
+  ]
+}

@@ -1,0 +1,20 @@
+﻿# Gradle
+.gradle/
+build/
+
+# IntelliJ / IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# Agent caches
+.gemini/
+.agents/
+
+# System
+.DS_Store
+Thumbs.db

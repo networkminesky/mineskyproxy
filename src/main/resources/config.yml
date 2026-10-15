@@ -1,0 +1,86 @@
+﻿# =======================================================
+#               MineSkyProxy - Configuração
+# =======================================================
+
+# Nome do servidor de eventos registrado no Velocity (velocity.toml)
+event-server: "eventos"
+
+# Servidores de Hub / Lobby para onde os jogadores retornam
+hub-servers:
+  - "hub"
+  - "lobby"
+
+# Servidor de fallback se o servidor desejado não estiver acessível
+fallback-hub: "hub"
+
+# Configurações de Anúncios na Proxy
+announcements:
+  broadcast-on-start: true
+  broadcast-on-end: true
+  broadcast-on-cancel: true
+  send-title-on-start: true
+  title-fade-in: 10
+  title-stay: 70
+  title-fade-out: 20
+
+# Configurações de Recompensas
+rewards:
+  # Se deve notificar o jogador na proxy se ele estiver online
+  notify-player: true
+  # Log detalhado no console para auditoria
+  log-rewards: true
+
+# Mensagens do sistema (formato MiniMessage ou legado com &)
+messages:
+  prefix: "<gradient:#FF5555:#FFAA00><b>MineSky</b></gradient> <dark_gray>»</dark_gray>"
+  
+  event-started-broadcast: |
+    
+    <dark_gray>--------------------------------------------------</dark_gray>
+    <gold>★ <yellow><b>EVENTO INICIADO!</b></yellow> ★</gold>
+    <gray>O evento <yellow><b><event_name></b></yellow> acabou de começar no servidor de eventos!</gray>
+    <gray>Mapa: <yellow><map_id></yellow></gray>
+    
+    <click:run_command:'/evento entrar'><hover:show_text:'<green>Clique para entrar no evento!'><gradient:#00FFAA:#00AAFF><b>[CLIQUE AQUI PARA ENTRAR NO EVENTO]</b></gradient></hover></click>
+    <gray>Ou digite: <gold>/evento entrar</gold></gray>
+    <dark_gray>--------------------------------------------------</dark_gray>
+    
+  event-ended-broadcast: |
+    <prefix> <yellow>O evento <gold><b><event_name></b></gold> foi encerrado com sucesso!</yellow>
+    
+  event-cancelled-broadcast: |
+    <prefix> <red>O evento <yellow><b><event_name></b></yellow> foi cancelado! Motivo: <gray><reason></gray></red>
+
+  title-started: "<gradient:#FF5555:#FFAA00><b>EVENTO INICIADO</b></gradient>"
+  subtitle-started: "<yellow><event_name></yellow> <gray>- Digite <gold>/evento entrar</gold></gray>"
+
+  connecting: "<prefix> <green>Conectando você ao servidor de eventos...</green>"
+  already-connected: "<prefix> <yellow>Você já está no servidor de eventos!</yellow>"
+  server-offline: "<prefix> <red>O servidor de eventos não foi encontrado ou está offline.</red>"
+  hub-redirect: "<prefix> <gray>Redirecionando você para o Hub...</gray>"
+  
+  reward-notification: "<prefix> <green>Parabéns! Você recebeu <gold><b>$<amount></b></gold> por participar do evento <yellow><event_name></yellow> (<placement>º lugar)!</green>"
+  
+  no-event-active: "<prefix> <red>Nenhum evento está ativo no momento.</red>"
+  status-header: "<prefix> <gold>Status do Servidor de Eventos:</gold>"
+  status-active: "<prefix> <gray>Evento ativo: <yellow><event_name></yellow> | Mapa: <yellow><map_id></yellow> | Estado: <green><state></green> | Jogadores: <aqua><players></aqua></gray>"
+  status-none: "<prefix> <gray>Nenhum evento em andamento no momento.</gray>"
+  status-ping: "<prefix> <gray>Ping enviado ao servidor <yellow><server></yellow>...</gray>"
+  status-pong: "<prefix> <green>Resposta recebida de <yellow><server></yellow> em <aqua><ms>ms</aqua>!</green>"
+  
+  admin-only: "<prefix> <red>Você não tem permissão para executar este comando.</red>"
+  player-only: "<prefix> <red>Apenas jogadores podem utilizar este comando.</red>"
+  player-not-found: "<prefix> <red>Jogador <yellow><player></yellow> não encontrado na proxy.</red>"
+  sent-player: "<prefix> <green>Jogador <yellow><player></yellow> enviado para o servidor de eventos!</green>"
+  sent-all: "<prefix> <green>Todos os jogadores do lobby foram enviados ao servidor de eventos!</green>"
+  reloaded: "<prefix> <green>Configurações recarregadas com sucesso!</green>"
+  
+  help-header: "<dark_gray>----- <gold><b>MineSky Eventos (Proxy)</b></gold> <dark_gray>-----</dark_gray>"
+  help-entrar: "<yellow>/evento entrar</yellow> <gray>- Entra no servidor de eventos</gray>"
+  help-status: "<yellow>/evento status</yellow> <gray>- Mostra o status do evento atual</gray>"
+  help-start: "<gold>/evento start <tipo> [mapa]</gold> <gray>- Inicia um evento</gray>"
+  help-stop: "<gold>/evento stop</gold> <gray>- Encerra o evento graciosamente</gray>"
+  help-forcestop: "<gold>/evento forcestop</gold> <gray>- Força o cancelamento imediato do evento</gray>"
+  help-enviar: "<gold>/evento enviar <jogador></gold> <gray>- Envia um jogador para o evento</gray>"
+  help-puxartodos: "<gold>/evento puxartodos</gold> <gray>- Puxa jogadores para o evento</gray>"
+  help-reload: "<gold>/evento reload</gold> <gray>- Recarrega a configuração do plugin</gray>"
