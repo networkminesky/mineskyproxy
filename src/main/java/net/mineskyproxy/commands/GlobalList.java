@@ -8,13 +8,10 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.Component;
 
-import java.util.Arrays;
-
 public class GlobalList {
-
     public static BrigadierCommand createBrigadierCommand(final ProxyServer proxy) {
         LiteralCommandNode<CommandSource> staffNode = BrigadierCommand.literalArgumentBuilder("glist")
-                .requires(a -> a.hasPermission("mineskynetwork.glist"))
+                .requires(a -> a.hasPermission("mineskyproxy.glist"))
                 .executes(context -> {
                     CommandSource source = context.getSource();
 
@@ -35,5 +32,4 @@ public class GlobalList {
 
         return new BrigadierCommand(staffNode);
     }
-
 }

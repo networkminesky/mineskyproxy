@@ -25,8 +25,8 @@ public class TellCommand implements SimpleCommand {
     private static final TextColor ROSA_CLARO = TextColor.fromHexString("#ff7396");
     private static final TextColor ROSA_ESCURO = TextColor.fromHexString("#ffd4de");
 
-    public static final String PERMISSION_SEND_TO_VANISHED = "mineskycore.tell.sendtovanished";
-    public static final String PERMISSION_SOCIAL_SPY = "mineskycore.socialspy";
+    public static final String PERMISSION_SEND_TO_VANISHED = "mineskyproxy.tell.sendtovanished";
+    public static final String PERMISSION_SOCIAL_SPY = "minesky.spy";
 
     private static final Sound BELL_SOUND = Sound.sound(
             Key.key("minecraft:block.note_block.bell"),
@@ -56,7 +56,6 @@ public class TellCommand implements SimpleCommand {
             return;
         }
 
-        // Subcomando /socialspy ou /spy
         if (alias.equals("socialspy") || alias.equals("spy")) {
             if (!sender.hasPermission(PERMISSION_SOCIAL_SPY)) {
                 sender.sendMessage(TextUtil.parse("&cVocê não tem permissão para usar esse comando."));
@@ -71,7 +70,6 @@ public class TellCommand implements SimpleCommand {
             return;
         }
 
-        // Comando de resposta: /r ou /reply
         if (alias.equals("r") || alias.equals("reply")) {
             if (args.length < 1) {
                 sender.sendMessage(Component.text("Uso correto: /r <mensagem>", NamedTextColor.RED));
@@ -91,7 +89,6 @@ public class TellCommand implements SimpleCommand {
             return;
         }
 
-        // Comando /tell <jogador> <mensagem>
         if (args.length < 2) {
             sender.sendMessage(Component.text("Uso correto: /tell <jogador> <mensagem>", NamedTextColor.RED));
             return;

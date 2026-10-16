@@ -56,21 +56,17 @@ public class MineSkyProxy {
         logger.info("   MineSkyProxy - Inicializando Plugin Proxy    ");
         logger.info("================================================");
 
-        // 1. Carrega configuracao
         this.config = new ProxyConfig(dataDirectory, logger);
         this.config.load();
 
-        // 2. Registra o canal de comunicacao com o Paper
         proxy.getChannelRegistrar().register(ProxyChannel.IDENTIFIER);
         logger.info("Canal '{}' registrado com sucesso no Velocity.", ProxyChannel.CHANNEL_NAME);
 
-        // 3. Inicializa os gerenciadores
         this.rewardManager = new RewardManager(proxy, config, logger);
         this.eventProxyManager = new EventProxyManager(proxy, config, logger, rewardManager);
         this.vanishManager = new VanishManager();
         this.tellManager = new TellManager();
 
-        // 4. Registra o listener de Plugin Messages e eventos
         proxy.getEventManager().register(this, new PluginMessageListener(eventProxyManager, rewardManager, vanishManager, logger));
         proxy.getEventManager().register(this, this);
         proxy.getEventManager().register(this, new PlayerEvents());
@@ -78,7 +74,6 @@ public class MineSkyProxy {
 
         CommandManager commandManager = proxy.getCommandManager();
 
-        // 5. Registra o comando /evento e apelidos
         CommandMeta eventoMeta = commandManager.metaBuilder("evento")
                 .aliases("eventos", "event")
                 .plugin(this)
@@ -86,7 +81,6 @@ public class MineSkyProxy {
         commandManager.register(eventoMeta, new EventoCommand(proxy, config, eventProxyManager));
         logger.info("Comando /evento (/eventos, /event) registrado.");
 
-        // 6. Registra o comando /staffchat (/sc, /s)
         CommandMeta staffChatMeta = commandManager.metaBuilder("staffchat")
                 .aliases("s")
                 .plugin(this)
@@ -94,7 +88,6 @@ public class MineSkyProxy {
         commandManager.register(staffChatMeta, new StaffChatCommand(proxy, config, vanishManager, logger));
         logger.info("Comando /staffchat (/sc, /s) registrado.");
 
-        // 7. Registra os comandos de tell (/tell, /msg, /w, /t, /whisper)
         TellCommand tellCommand = new TellCommand(proxy, tellManager, vanishManager);
         CommandMeta tellMeta = commandManager.metaBuilder("tell")
                 .aliases("t", "w", "msg", "whisper", "pm", "dm", "m")
@@ -102,14 +95,12 @@ public class MineSkyProxy {
                 .build();
         commandManager.register(tellMeta, tellCommand);
 
-        // /r, /reply
         CommandMeta replyMeta = commandManager.metaBuilder("r")
                 .aliases("reply")
                 .plugin(this)
                 .build();
         commandManager.register(replyMeta, tellCommand);
 
-        // /socialspy, /spy
         CommandMeta spyMeta = commandManager.metaBuilder("socialspy")
                 .aliases("spy")
                 .plugin(this)
@@ -117,7 +108,6 @@ public class MineSkyProxy {
         commandManager.register(spyMeta, tellCommand);
         logger.info("Comandos de Tell (/tell, /r, /socialspy) registrados.");
 
-        // 8. Registra o comando /ping
         CommandMeta pingMeta = commandManager.metaBuilder("ping")
                 .aliases("latency")
                 .plugin(this)
@@ -125,19 +115,19 @@ public class MineSkyProxy {
         commandManager.register(pingMeta, new PingCommand(proxy));
         logger.info("Comando /ping registrado.");
 
-        // 9. Registra o comando /anunciar
         CommandMeta anunciarMeta = commandManager.metaBuilder("anunciar")
                 .aliases("aviso")
                 .plugin(this)
                 .build();
         commandManager.register(anunciarMeta, new AnunciarCommand(proxy));
+        logger.info("Comando /anunciar registrado.");
 
         final BrigadierCommand gList = GlobalList.createBrigadierCommand(proxy);
         commandManager.register(commandManager.metaBuilder(gList)
                 .aliases("globallist")
                 .build(), gList);
 
-        logger.info("Comando /anunciar registrado.");
+        logger.info("Comando /globallist registrado.");
 
         logger.info("MineSkyProxy inicializado e pronto para operacao!");
     }

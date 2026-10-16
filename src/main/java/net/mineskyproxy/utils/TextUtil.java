@@ -19,12 +19,10 @@ public final class TextUtil {
             return Component.empty();
         }
 
-        // Se contiver tags de MiniMessage ou for formato padrão
         if (input.contains("<") && input.contains(">")) {
             return MINI_MESSAGE.deserialize(input);
         }
 
-        // Se usar códigos & legados
         if (input.contains("&")) {
             return LEGACY_SERIALIZER.deserialize(input);
         }

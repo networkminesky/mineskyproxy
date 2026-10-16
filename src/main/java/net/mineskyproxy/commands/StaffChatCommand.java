@@ -22,7 +22,7 @@ import java.util.List;
 
 public class StaffChatCommand implements SimpleCommand {
 
-    public static final String PERMISSION = "mineskycore.staffchat";
+    public static final String PERMISSION = "mineskyproxy.staffchat";
     private static final TextColor BASE_COLOR = TextColor.fromHexString("#ffa8a8");
 
     private final ProxyServer server;
@@ -98,15 +98,12 @@ public class StaffChatCommand implements SimpleCommand {
                 .append(formatMessage(msg))
                 .hoverEvent(HoverEvent.showText(hoverInfo));
 
-        // Envia para o console do Velocity
         server.getConsoleCommandSource().sendMessage(packet);
 
-        // Envia para todos os jogadores staff conectados no Proxy
         server.getAllPlayers().stream()
                 .filter(bs -> bs.hasPermission(PERMISSION))
                 .forEach(bs -> bs.sendMessage(packet));
 
-        // Envia para o Discord via Webhook caso configurado
         String webhookUrl = config.getStaffChatWebhook();
         if (webhookUrl != null && !webhookUrl.isBlank()) {
             new DiscordWebhook(webhookUrl)

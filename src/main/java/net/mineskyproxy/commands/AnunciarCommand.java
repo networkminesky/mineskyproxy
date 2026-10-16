@@ -16,7 +16,7 @@ import java.util.List;
 
 public class AnunciarCommand implements SimpleCommand {
 
-    public static final String PERMISSION = "mineskycore.anunciar";
+    public static final String PERMISSION = "mineskyproxy.anunciar";
 
     private static final Sound LEVELUP_SOUND = Sound.sound(
             Key.key("minecraft:entity.player.levelup"),

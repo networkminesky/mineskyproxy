@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class PingCommand implements SimpleCommand {
 
-    public static final String PERMISSION_OTHERS = "mineskycore.ping.others";
+    public static final String PERMISSION_OTHERS = "mineskyproxy.ping.others";
 
     private final ProxyServer server;
 
@@ -61,14 +61,12 @@ public class PingCommand implements SimpleCommand {
     }
 
     private static long getPing(Player p) {
-        // Se for jogador Bedrock (via Geyser/Floodgate), tenta obter o ping real do cliente Bedrock
         Long bedrockPing = BedrockHook.getBedrockPing(p.getUniqueId());
         if (bedrockPing != null && bedrockPing >= 0) {
             return bedrockPing;
         }
 
         long ping = p.getPing();
-        // Caso o proxy retorne ping negativo (ainda não medido no Velocity), define fallback amigável
         return ping >= 0 ? ping : 0;
     }
 

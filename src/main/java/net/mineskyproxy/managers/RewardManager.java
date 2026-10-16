@@ -38,7 +38,6 @@ public class RewardManager {
                     playerName, amount, eventId, placement);
         }
 
-        // Executa handler customizado (ex: insercao em banco de dados, API web, etc.)
         if (customRewardHandler != null) {
             try {
                 customRewardHandler.accept(record);
@@ -47,7 +46,6 @@ public class RewardManager {
             }
         }
 
-        // Se o jogador estiver online na proxy, envia a mensagem de notificacao
         if (config.isNotifyReward()) {
             Optional<Player> optionalPlayer = server.getPlayer(playerName);
             if (optionalPlayer.isPresent()) {

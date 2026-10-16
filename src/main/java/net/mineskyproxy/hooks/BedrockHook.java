@@ -19,7 +19,6 @@ public final class BedrockHook {
     public static boolean isBedrockPlayer(UUID uuid) {
         if (uuid == null) return false;
 
-        // 1. Tentar via Floodgate API
         if (checkFloodgate()) {
             try {
                 Object result = isFloodgatePlayerMethod.invoke(floodgateInstance, uuid);
@@ -29,7 +28,6 @@ public final class BedrockHook {
             } catch (Throwable ignored) {}
         }
 
-        // 2. Tentar via Geyser API
         if (checkGeyser()) {
             try {
                 Object conn = geyserConnectionByUuidMethod.invoke(null, uuid);
@@ -45,7 +43,6 @@ public final class BedrockHook {
     public static Long getBedrockPing(UUID uuid) {
         if (uuid == null) return null;
 
-        // Tentar via Geyser API (GeyserApi.api().connectionByUuid(uuid).ping())
         if (checkGeyser()) {
             try {
                 Object conn = geyserConnectionByUuidMethod.invoke(null, uuid);
