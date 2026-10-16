@@ -1,6 +1,7 @@
 package net.mineskyproxy;
 
 import com.google.inject.Inject;
+import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.Subscribe;
@@ -12,12 +13,9 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.mineskyproxy.channel.PluginMessageListener;
 import net.mineskyproxy.channel.ProxyChannel;
-import net.mineskyproxy.commands.AnunciarCommand;
-import net.mineskyproxy.commands.EventoCommand;
-import net.mineskyproxy.commands.PingCommand;
-import net.mineskyproxy.commands.StaffChatCommand;
-import net.mineskyproxy.commands.TellCommand;
+import net.mineskyproxy.commands.*;
 import net.mineskyproxy.config.ProxyConfig;
+import net.mineskyproxy.events.PlayerEvents;
 import net.mineskyproxy.managers.EventProxyManager;
 import net.mineskyproxy.managers.RewardManager;
 import net.mineskyproxy.managers.TellManager;
@@ -35,7 +33,7 @@ import java.nio.file.Path;
 )
 public class MineSkyProxy {
 
-    private final ProxyServer server;
+    private final ProxyServer proxy;
     private final Logger logger;
     private final Path dataDirectory;
 
@@ -46,8 +44,8 @@ public class MineSkyProxy {
     private TellManager tellManager;
 
     @Inject
-    public MineSkyProxy(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
-        this.server = server;
+    public MineSkyProxy(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
+        this.proxy = proxy;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
     }
@@ -63,42 +61,43 @@ public class MineSkyProxy {
         this.config.load();
 
         // 2. Registra o canal de comunicacao com o Paper
-        server.getChannelRegistrar().register(ProxyChannel.IDENTIFIER);
+        proxy.getChannelRegistrar().register(ProxyChannel.IDENTIFIER);
         logger.info("Canal '{}' registrado com sucesso no Velocity.", ProxyChannel.CHANNEL_NAME);
 
         // 3. Inicializa os gerenciadores
-        this.rewardManager = new RewardManager(server, config, logger);
-        this.eventProxyManager = new EventProxyManager(server, config, logger, rewardManager);
+        this.rewardManager = new RewardManager(proxy, config, logger);
+        this.eventProxyManager = new EventProxyManager(proxy, config, logger, rewardManager);
         this.vanishManager = new VanishManager();
         this.tellManager = new TellManager();
 
         // 4. Registra o listener de Plugin Messages e eventos
-        server.getEventManager().register(this, new PluginMessageListener(eventProxyManager, rewardManager, vanishManager, logger));
-        server.getEventManager().register(this, this);
+        proxy.getEventManager().register(this, new PluginMessageListener(eventProxyManager, rewardManager, vanishManager, logger));
+        proxy.getEventManager().register(this, this);
+        proxy.getEventManager().register(this, new PlayerEvents());
         logger.info("Listeners registrados com sucesso.");
 
-        CommandManager commandManager = server.getCommandManager();
+        CommandManager commandManager = proxy.getCommandManager();
 
         // 5. Registra o comando /evento e apelidos
         CommandMeta eventoMeta = commandManager.metaBuilder("evento")
                 .aliases("eventos", "event")
                 .plugin(this)
                 .build();
-        commandManager.register(eventoMeta, new EventoCommand(server, config, eventProxyManager));
+        commandManager.register(eventoMeta, new EventoCommand(proxy, config, eventProxyManager));
         logger.info("Comando /evento (/eventos, /event) registrado.");
 
         // 6. Registra o comando /staffchat (/sc, /s)
         CommandMeta staffChatMeta = commandManager.metaBuilder("staffchat")
-                .aliases("sc", "s")
+                .aliases("s")
                 .plugin(this)
                 .build();
-        commandManager.register(staffChatMeta, new StaffChatCommand(server, config, vanishManager, logger));
+        commandManager.register(staffChatMeta, new StaffChatCommand(proxy, config, vanishManager, logger));
         logger.info("Comando /staffchat (/sc, /s) registrado.");
 
         // 7. Registra os comandos de tell (/tell, /msg, /w, /t, /whisper)
-        TellCommand tellCommand = new TellCommand(server, tellManager, vanishManager);
+        TellCommand tellCommand = new TellCommand(proxy, tellManager, vanishManager);
         CommandMeta tellMeta = commandManager.metaBuilder("tell")
-                .aliases("t", "w", "msg", "whisper")
+                .aliases("t", "w", "msg", "whisper", "pm", "dm", "m")
                 .plugin(this)
                 .build();
         commandManager.register(tellMeta, tellCommand);
@@ -123,7 +122,7 @@ public class MineSkyProxy {
                 .aliases("latency")
                 .plugin(this)
                 .build();
-        commandManager.register(pingMeta, new PingCommand(server));
+        commandManager.register(pingMeta, new PingCommand(proxy));
         logger.info("Comando /ping registrado.");
 
         // 9. Registra o comando /anunciar
@@ -131,7 +130,13 @@ public class MineSkyProxy {
                 .aliases("aviso")
                 .plugin(this)
                 .build();
-        commandManager.register(anunciarMeta, new AnunciarCommand(server));
+        commandManager.register(anunciarMeta, new AnunciarCommand(proxy));
+
+        final BrigadierCommand gList = GlobalList.createBrigadierCommand(proxy);
+        commandManager.register(commandManager.metaBuilder(gList)
+                .aliases("globallist")
+                .build(), gList);
+
         logger.info("Comando /anunciar registrado.");
 
         logger.info("MineSkyProxy inicializado e pronto para operacao!");
@@ -150,7 +155,7 @@ public class MineSkyProxy {
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         logger.info("MineSkyProxy sendo desativado...");
-        server.getChannelRegistrar().unregister(ProxyChannel.IDENTIFIER);
+        proxy.getChannelRegistrar().unregister(ProxyChannel.IDENTIFIER);
         if (vanishManager != null) {
             vanishManager.clear();
         }
@@ -158,7 +163,7 @@ public class MineSkyProxy {
     }
 
     public ProxyServer getServer() {
-        return server;
+        return proxy;
     }
 
     public Logger getLogger() {

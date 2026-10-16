@@ -5,11 +5,13 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://jitpack.io")
 }
 
 dependencies {
     compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
     compileOnly("net.luckperms:api:5.4")
+    compileOnly("com.github.networkminesky:mainframe:1.3.1-BETA")
 }
 
 java {

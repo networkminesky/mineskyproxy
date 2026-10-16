@@ -1,6 +1,12 @@
 package net.mineskyproxy.managers;
 
 import com.velocitypowered.api.proxy.Player;
+import net.minesky.api.database.PlayerDatabase;
+import net.minesky.api.database.UpdatedData;
+import net.minesky.core.databridge.callbacks.ErrorType;
+import net.minesky.core.databridge.callbacks.FindOneCallback;
+import net.minesky.core.databridge.callbacks.SetOneCallback;
+import org.bson.Document;
 
 import java.util.Map;
 import java.util.Set;
@@ -8,12 +14,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TellManager {
-
-    // Guarda o último jogador que conversou com quem (UUID de quem enviou -> UUID de quem recebeu)
     private final Map<UUID, UUID> lastTell = new ConcurrentHashMap<>();
 
-    // Jogadores com SocialSpy ativo
-    private final Set<UUID> playersWithSpy = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> playersWithSpy = ConcurrentHashMap.newKeySet();
 
     public void setLastTell(UUID player, UUID target) {
         if (player == null || target == null) return;
@@ -40,14 +43,45 @@ public class TellManager {
         if (player == null) return false;
         if (playersWithSpy.contains(player)) {
             playersWithSpy.remove(player);
+            setSpy(player, false);
             return false;
         } else {
             playersWithSpy.add(player);
+            setSpy(player, true);
             return true;
         }
     }
 
     public Set<UUID> getPlayersWithSpy() {
         return playersWithSpy;
+    }
+
+    public static void addPlayer(UUID p) {
+        playersWithSpy.add(p);
+    }
+
+    public interface PlayerBooleanReturnCallback {
+        void onQueryDone(boolean value);
+    }
+
+    public void setSpy(UUID uuid, boolean enabled) {
+        PlayerDatabase.setPlayerData(uuid.toString(), new UpdatedData("spy", enabled), new SetOneCallback() {
+            @Override public void onSetDone() {}
+            @Override public void onSetError(ErrorType errorType) {}
+        });
+    }
+
+    public static void getSpy(UUID uuid, PlayerBooleanReturnCallback callback) {
+        PlayerDatabase.getPlayerDataAsync(uuid.toString(), new FindOneCallback() {
+            @Override
+            public void onQueryError(ErrorType errorType) {
+                callback.onQueryDone(true);
+            }
+
+            @Override
+            public void onQueryDone(Document document) {
+                callback.onQueryDone(document == null || document.getBoolean("spy", false));
+            }
+        });
     }
 }
