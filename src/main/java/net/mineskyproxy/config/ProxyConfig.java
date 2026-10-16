@@ -23,6 +23,8 @@ public class ProxyConfig {
     private List<String> hubServers = Arrays.asList("hub", "lobby");
     private String fallbackHub = "hub";
 
+    private String staffChatWebhook = "";
+
     private boolean broadcastOnStart = true;
     private boolean broadcastOnEnd = true;
     private boolean broadcastOnCancel = true;
@@ -73,6 +75,8 @@ public class ProxyConfig {
             if (loadedHubs != null && !loadedHubs.isEmpty()) {
                 this.hubServers = loadedHubs;
             }
+
+            this.staffChatWebhook = root.node("webhooks", "staff-chat").getString("");
 
             ConfigurationNode announcements = root.node("announcements");
             this.broadcastOnStart = announcements.node("broadcast-on-start").getBoolean(true);
@@ -138,6 +142,10 @@ public class ProxyConfig {
 
     public String getFallbackHub() {
         return fallbackHub;
+    }
+
+    public String getStaffChatWebhook() {
+        return staffChatWebhook;
     }
 
     public boolean isBroadcastOnStart() {

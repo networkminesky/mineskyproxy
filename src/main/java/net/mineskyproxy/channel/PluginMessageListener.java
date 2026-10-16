@@ -7,17 +7,22 @@ import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.ServerConnection;
 import net.mineskyproxy.managers.EventProxyManager;
 import net.mineskyproxy.managers.RewardManager;
+import net.mineskyproxy.managers.VanishManager;
 import org.slf4j.Logger;
+
+import java.util.UUID;
 
 public class PluginMessageListener {
 
     private final EventProxyManager eventManager;
     private final RewardManager rewardManager;
+    private final VanishManager vanishManager;
     private final Logger logger;
 
-    public PluginMessageListener(EventProxyManager eventManager, RewardManager rewardManager, Logger logger) {
+    public PluginMessageListener(EventProxyManager eventManager, RewardManager rewardManager, VanishManager vanishManager, Logger logger) {
         this.eventManager = eventManager;
         this.rewardManager = rewardManager;
+        this.vanishManager = vanishManager;
         this.logger = logger;
     }
 
@@ -76,6 +81,17 @@ public class PluginMessageListener {
                     String playerName = in.readUTF();
                     String targetServer = in.readUTF();
                     eventManager.handleConnectHub(playerName, targetServer);
+                }
+                case ProxyChannel.MSG_VANISH_UPDATE -> {
+                    String uuidString = in.readUTF();
+                    boolean vanished = in.readBoolean();
+                    try {
+                        UUID uuid = UUID.fromString(uuidString);
+                        vanishManager.setVanished(uuid, vanished);
+                        logger.debug("[VANISH] Atualizado status de vanish para {}: {}", uuid, vanished);
+                    } catch (IllegalArgumentException ex) {
+                        logger.warn("[VANISH] UUID inválido recebido em VanishUpdate: {}", uuidString);
+                    }
                 }
                 default -> logger.warn("Sub-canal desconhecido recebido em minesky:proxy: {}", subChannel);
             }

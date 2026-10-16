@@ -9,6 +9,7 @@ repositories {
 
 dependencies {
     compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
+    compileOnly("net.luckperms:api:5.4")
 }
 
 java {

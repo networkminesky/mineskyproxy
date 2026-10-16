@@ -1,4 +1,4 @@
-﻿# =======================================================
+# =======================================================
 #               MineSkyProxy - Configuração
 # =======================================================
 
@@ -12,6 +12,10 @@ hub-servers:
 
 # Servidor de fallback se o servidor desejado não estiver acessível
 fallback-hub: "hub"
+
+# Configurações de Webhooks do Discord
+webhooks:
+  staff-chat: ""
 
 # Configurações de Anúncios na Proxy
 announcements:
