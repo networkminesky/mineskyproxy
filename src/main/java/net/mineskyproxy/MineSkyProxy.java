@@ -12,11 +12,15 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.mineskyproxy.channel.PluginMessageListener;
 import net.mineskyproxy.channel.ProxyChannel;
+import net.mineskyproxy.commands.AnunciarCommand;
 import net.mineskyproxy.commands.EventoCommand;
+import net.mineskyproxy.commands.PingCommand;
 import net.mineskyproxy.commands.StaffChatCommand;
+import net.mineskyproxy.commands.TellCommand;
 import net.mineskyproxy.config.ProxyConfig;
 import net.mineskyproxy.managers.EventProxyManager;
 import net.mineskyproxy.managers.RewardManager;
+import net.mineskyproxy.managers.TellManager;
 import net.mineskyproxy.managers.VanishManager;
 import org.slf4j.Logger;
 
@@ -39,6 +43,7 @@ public class MineSkyProxy {
     private RewardManager rewardManager;
     private EventProxyManager eventProxyManager;
     private VanishManager vanishManager;
+    private TellManager tellManager;
 
     @Inject
     public MineSkyProxy(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
@@ -65,14 +70,16 @@ public class MineSkyProxy {
         this.rewardManager = new RewardManager(server, config, logger);
         this.eventProxyManager = new EventProxyManager(server, config, logger, rewardManager);
         this.vanishManager = new VanishManager();
+        this.tellManager = new TellManager();
 
         // 4. Registra o listener de Plugin Messages e eventos
         server.getEventManager().register(this, new PluginMessageListener(eventProxyManager, rewardManager, vanishManager, logger));
         server.getEventManager().register(this, this);
         logger.info("Listeners registrados com sucesso.");
 
-        // 5. Registra o comando /evento e apelidos
         CommandManager commandManager = server.getCommandManager();
+
+        // 5. Registra o comando /evento e apelidos
         CommandMeta eventoMeta = commandManager.metaBuilder("evento")
                 .aliases("eventos", "event")
                 .plugin(this)
@@ -88,6 +95,45 @@ public class MineSkyProxy {
         commandManager.register(staffChatMeta, new StaffChatCommand(server, config, vanishManager, logger));
         logger.info("Comando /staffchat (/sc, /s) registrado.");
 
+        // 7. Registra os comandos de tell (/tell, /msg, /w, /t, /whisper)
+        TellCommand tellCommand = new TellCommand(server, tellManager, vanishManager);
+        CommandMeta tellMeta = commandManager.metaBuilder("tell")
+                .aliases("t", "w", "msg", "whisper")
+                .plugin(this)
+                .build();
+        commandManager.register(tellMeta, tellCommand);
+
+        // /r, /reply
+        CommandMeta replyMeta = commandManager.metaBuilder("r")
+                .aliases("reply")
+                .plugin(this)
+                .build();
+        commandManager.register(replyMeta, tellCommand);
+
+        // /socialspy, /spy
+        CommandMeta spyMeta = commandManager.metaBuilder("socialspy")
+                .aliases("spy")
+                .plugin(this)
+                .build();
+        commandManager.register(spyMeta, tellCommand);
+        logger.info("Comandos de Tell (/tell, /r, /socialspy) registrados.");
+
+        // 8. Registra o comando /ping
+        CommandMeta pingMeta = commandManager.metaBuilder("ping")
+                .aliases("latency")
+                .plugin(this)
+                .build();
+        commandManager.register(pingMeta, new PingCommand(server));
+        logger.info("Comando /ping registrado.");
+
+        // 9. Registra o comando /anunciar
+        CommandMeta anunciarMeta = commandManager.metaBuilder("anunciar")
+                .aliases("aviso")
+                .plugin(this)
+                .build();
+        commandManager.register(anunciarMeta, new AnunciarCommand(server));
+        logger.info("Comando /anunciar registrado.");
+
         logger.info("MineSkyProxy inicializado e pronto para operacao!");
     }
 
@@ -95,6 +141,9 @@ public class MineSkyProxy {
     public void onDisconnect(DisconnectEvent event) {
         if (vanishManager != null) {
             vanishManager.remove(event.getPlayer().getUniqueId());
+        }
+        if (tellManager != null) {
+            tellManager.removePlayer(event.getPlayer().getUniqueId());
         }
     }
 
@@ -134,5 +183,9 @@ public class MineSkyProxy {
 
     public VanishManager getVanishManager() {
         return vanishManager;
+    }
+
+    public TellManager getTellManager() {
+        return tellManager;
     }
 }
