@@ -1,8 +1,8 @@
 package net.mineskyproxy.utils;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.Map;
@@ -10,7 +10,11 @@ import java.util.Map;
 public final class TextUtil {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
-    private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacyAmpersand();
+    private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
+            .character('&')
+            .hexColors()
+            .useUnusualXRepeatedCharacterHexFormat()
+            .build();
 
     private TextUtil() {}
 
@@ -19,12 +23,19 @@ public final class TextUtil {
             return Component.empty();
         }
 
+        if (input.startsWith("#") && input.length() == 7) {
+            TextColor hexColor = TextColor.fromHexString(input);
+            if (hexColor != null) {
+                return Component.empty().color(hexColor);
+            }
+        }
+
         if (input.contains("<") && input.contains(">")) {
             return MINI_MESSAGE.deserialize(input);
         }
 
-        if (input.contains("&")) {
-            return LEGACY_SERIALIZER.deserialize(input);
+        if (input.contains("&") || input.contains("§")) {
+            return LEGACY_SERIALIZER.deserialize(input.replace('§', '&'));
         }
 
         return MINI_MESSAGE.deserialize(input);

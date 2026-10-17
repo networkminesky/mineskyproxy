@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.mineskyproxy.addons.Emojis;
 import net.mineskyproxy.managers.TellManager;
 import net.mineskyproxy.managers.VanishManager;
 import net.mineskyproxy.utils.TextUtil;
@@ -121,6 +122,8 @@ public class TellCommand implements SimpleCommand {
                 .map(conn -> " (" + conn.getServerInfo().getName() + ")")
                 .orElse("");
 
+        Component emojiMessage = Emojis.formatToComponent(msg, "<#ff7396><i>", source);
+
         Component paraQuemTaRecebendo = Component.text("[", ROSA_CLARO)
                 .append(Component.text("t", ROSA_CLARO))
                 .append(Component.text("] ", ROSA_CLARO))
@@ -128,7 +131,8 @@ public class TellCommand implements SimpleCommand {
                 .append(Component.text(" -> ", NamedTextColor.DARK_GRAY))
                 .append(Component.text("VOCÊ", Style.style(ROSA_ESCURO, TextDecoration.ITALIC)))
                 .append(Component.text(":", NamedTextColor.DARK_GRAY))
-                .append(Component.text(" " + msg, ROSA_CLARO, TextDecoration.ITALIC))
+                .append(Component.space())
+                .append(emojiMessage)
                 .hoverEvent(HoverEvent.showText(Component.text("§eClique para responder rapidamente." + serverName)))
                 .clickEvent(ClickEvent.suggestCommand("/tell " + source.getUsername() + " "));
 
@@ -139,7 +143,8 @@ public class TellCommand implements SimpleCommand {
                 .append(Component.text(" -> ", NamedTextColor.DARK_GRAY))
                 .append(Component.text(who.getUsername(), Style.style(ROSA_CLARO, TextDecoration.ITALIC, TextDecoration.BOLD)))
                 .append(Component.text(":", NamedTextColor.DARK_GRAY))
-                .append(Component.text(" " + msg, ROSA_CLARO, TextDecoration.ITALIC));
+                .append(Component.space())
+                .append(emojiMessage);
 
         Component spyMessage = Component.text("(Spy)", Style.style(NamedTextColor.DARK_GRAY, TextDecoration.ITALIC))
                 .append(Component.text(" ", NamedTextColor.GRAY))
@@ -150,7 +155,8 @@ public class TellCommand implements SimpleCommand {
                 .append(Component.text(" -> ", NamedTextColor.GRAY))
                 .append(Component.text(who.getUsername(), Style.style(ROSA_CLARO, TextDecoration.ITALIC, TextDecoration.BOLD)))
                 .append(Component.text(":", NamedTextColor.DARK_GRAY))
-                .append(Component.text(" " + msg, ROSA_CLARO, TextDecoration.ITALIC))
+                .append(Component.space())
+                .append(emojiMessage)
                 .append(Component.text(" ", NamedTextColor.GRAY));
 
         try {
@@ -177,7 +183,22 @@ public class TellCommand implements SimpleCommand {
         String alias = invocation.alias().toLowerCase();
         String[] args = invocation.arguments();
 
-        if (alias.equals("r") || alias.equals("reply") || alias.equals("socialspy") || alias.equals("spy")) {
+        if (alias.equals("socialspy") || alias.equals("spy")) {
+            return Collections.emptyList();
+        }
+
+        if (alias.equals("r") || alias.equals("reply")) {
+            if (args.length > 0) {
+                String current = args[args.length - 1];
+                if (current.startsWith(":")) {
+                    CommandSource source = invocation.source();
+                    return Emojis.getKeys().stream()
+                            .filter(k -> Emojis.hasEmojiPermission(source, k))
+                            .map(k -> ":" + k + ":")
+                            .filter(k -> k.toLowerCase().startsWith(current.toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+            }
             return Collections.emptyList();
         }
 
@@ -190,6 +211,16 @@ public class TellCommand implements SimpleCommand {
                     .map(Player::getUsername)
                     .filter(name -> name.toLowerCase().startsWith(current))
                     .sorted()
+                    .collect(Collectors.toList());
+        }
+
+        String current = args[args.length - 1];
+        if (current.startsWith(":")) {
+            CommandSource source = invocation.source();
+            return Emojis.getKeys().stream()
+                    .filter(k -> Emojis.hasEmojiPermission(source, k))
+                    .map(k -> ":" + k + ":")
+                    .filter(k -> k.toLowerCase().startsWith(current.toLowerCase()))
                     .collect(Collectors.toList());
         }
 

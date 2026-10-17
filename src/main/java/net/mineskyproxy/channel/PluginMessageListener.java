@@ -4,7 +4,11 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
+import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.mineskyproxy.managers.EventProxyManager;
 import net.mineskyproxy.managers.RewardManager;
 import net.mineskyproxy.managers.VanishManager;
@@ -14,12 +18,14 @@ import java.util.UUID;
 
 public class PluginMessageListener {
 
+    private final ProxyServer proxy;
     private final EventProxyManager eventManager;
     private final RewardManager rewardManager;
     private final VanishManager vanishManager;
     private final Logger logger;
 
-    public PluginMessageListener(EventProxyManager eventManager, RewardManager rewardManager, VanishManager vanishManager, Logger logger) {
+    public PluginMessageListener(ProxyServer proxy, EventProxyManager eventManager, RewardManager rewardManager, VanishManager vanishManager, Logger logger) {
+        this.proxy = proxy;
         this.eventManager = eventManager;
         this.rewardManager = rewardManager;
         this.vanishManager = vanishManager;
@@ -32,7 +38,6 @@ public class PluginMessageListener {
             return;
         }
 
-        // Marca a mensagem como tratada pelo proxy para evitar encaminhamento indevido
         event.setResult(PluginMessageEvent.ForwardResult.handled());
 
         if (!(event.getSource() instanceof ServerConnection)) {
@@ -91,6 +96,17 @@ public class PluginMessageListener {
                         logger.debug("[VANISH] Atualizado status de vanish para {}: {}", uuid, vanished);
                     } catch (IllegalArgumentException ex) {
                         logger.warn("[VANISH] UUID inválido recebido em VanishUpdate: {}", uuidString);
+                    }
+                }
+                case ProxyChannel.MSG_DISCORD -> {
+                    String jsonMessage = in.readUTF();
+                    Component message = GsonComponentSerializer.gson().deserialize(jsonMessage);
+
+                    for (Player player : proxy.getAllPlayers()) {
+                        if (!player.hasPermission("mineskyproxy.staffchat")) {
+                            continue;
+                        }
+                        player.sendMessage(message);
                     }
                 }
                 default -> logger.warn("Sub-canal desconhecido recebido em minesky:proxy: {}", subChannel);

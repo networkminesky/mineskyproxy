@@ -11,6 +11,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.mineskyproxy.addons.Emojis;
 import net.mineskyproxy.channel.PluginMessageListener;
 import net.mineskyproxy.channel.ProxyChannel;
 import net.mineskyproxy.commands.*;
@@ -59,6 +60,8 @@ public class MineSkyProxy {
         this.config = new ProxyConfig(dataDirectory, logger);
         this.config.load();
 
+        Emojis.load(dataDirectory, logger);
+
         proxy.getChannelRegistrar().register(ProxyChannel.IDENTIFIER);
         logger.info("Canal '{}' registrado com sucesso no Velocity.", ProxyChannel.CHANNEL_NAME);
 
@@ -67,7 +70,7 @@ public class MineSkyProxy {
         this.vanishManager = new VanishManager();
         this.tellManager = new TellManager();
 
-        proxy.getEventManager().register(this, new PluginMessageListener(eventProxyManager, rewardManager, vanishManager, logger));
+        proxy.getEventManager().register(this, new PluginMessageListener(proxy, eventProxyManager, rewardManager, vanishManager, logger));
         proxy.getEventManager().register(this, this);
         proxy.getEventManager().register(this, new PlayerEvents());
         logger.info("Listeners registrados com sucesso.");

@@ -9,6 +9,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.mineskyproxy.addons.Emojis;
 import net.mineskyproxy.config.ProxyConfig;
 import net.mineskyproxy.hooks.LuckPermsHook;
 import net.mineskyproxy.managers.VanishManager;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StaffChatCommand implements SimpleCommand {
 
@@ -68,9 +70,8 @@ public class StaffChatCommand implements SimpleCommand {
         return displayName;
     }
 
-    private Component formatMessage(String msg) {
-        Component parsed = TextUtil.parse(msg);
-        return Component.empty().style(Style.style(BASE_COLOR)).append(parsed);
+    private Component formatMessage(String msg, CommandSource sender) {
+        return Emojis.formatToComponent(msg, "<#ffa8a8>", sender);
     }
 
     public void sendStaffMessage(CommandSource s, String origin, String msg) {
@@ -95,7 +96,7 @@ public class StaffChatCommand implements SimpleCommand {
         Component packet = Component.text("§4[s] ")
                 .append(playerComponent)
                 .append(Component.text("§8: "))
-                .append(formatMessage(msg))
+                .append(formatMessage(msg, s))
                 .hoverEvent(HoverEvent.showText(hoverInfo));
 
         server.getConsoleCommandSource().sendMessage(packet);
@@ -121,6 +122,18 @@ public class StaffChatCommand implements SimpleCommand {
 
     @Override
     public List<String> suggest(Invocation invocation) {
+        String[] args = invocation.arguments();
+        if (args.length > 0) {
+            String current = args[args.length - 1];
+            if (current.startsWith(":")) {
+                CommandSource source = invocation.source();
+                return Emojis.getKeys().stream()
+                        .filter(k -> Emojis.hasEmojiPermission(source, k))
+                        .map(k -> ":" + k + ":")
+                        .filter(k -> k.toLowerCase().startsWith(current.toLowerCase()))
+                        .collect(Collectors.toList());
+            }
+        }
         return Collections.emptyList();
     }
 }

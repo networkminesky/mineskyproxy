@@ -22,6 +22,7 @@ public final class ProxyChannel {
     public static final String MSG_PONG = "PONG";
     public static final String MSG_CONNECT_HUB = "CONNECT_HUB";
     public static final String MSG_VANISH_UPDATE = "VanishUpdate";
+    public static final String MSG_DISCORD = "Discord";
 
     private ProxyChannel() {}
 }
