@@ -5,6 +5,9 @@
 # Nome do servidor de eventos registrado no Velocity (velocity.toml)
 event-server: "eventos"
 
+# Nome do servidor survival registrado no Velocity onde roda o MineSkyBridge
+survival-server: "survival"
+
 # Servidores de Hub / Lobby para onde os jogadores retornam
 hub-servers:
   - "hub"

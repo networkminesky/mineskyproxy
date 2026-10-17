@@ -20,6 +20,7 @@ public class ProxyConfig {
     private final Path configFile;
 
     private String eventServer = "eventos";
+    private String survivalServer = "survival";
     private List<String> hubServers = Arrays.asList("hub", "lobby");
     private String fallbackHub = "hub";
 
@@ -69,6 +70,7 @@ public class ProxyConfig {
             ConfigurationNode root = loader.load();
 
             this.eventServer = root.node("event-server").getString("eventos");
+            this.survivalServer = root.node("survival-server").getString("survival");
             this.fallbackHub = root.node("fallback-hub").getString("hub");
 
             List<String> loadedHubs = root.node("hub-servers").getList(String.class);
@@ -134,6 +136,10 @@ public class ProxyConfig {
 
     public String getEventServer() {
         return eventServer;
+    }
+
+    public String getSurvivalServer() {
+        return survivalServer;
     }
 
     public List<String> getHubServers() {

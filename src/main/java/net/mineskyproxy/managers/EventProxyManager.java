@@ -1,22 +1,21 @@
 package net.mineskyproxy.managers;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-import com.velocitypowered.api.proxy.server.ServerInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import net.minesky.api.messaging.Messaging;
+import net.minesky.core.messaging.MessageType;
 import net.mineskyproxy.channel.ProxyChannel;
 import net.mineskyproxy.config.ProxyConfig;
 import net.mineskyproxy.model.ActiveEventInfo;
 import net.mineskyproxy.model.EventType;
+import org.bson.Document;
 import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class EventProxyManager {
@@ -41,66 +40,60 @@ public class EventProxyManager {
         return server.getServer(config.getEventServer());
     }
 
-    public boolean sendToEventServer(byte[] data) {
-        Optional<RegisteredServer> targetServer = getEventServer();
-        if (targetServer.isEmpty()) {
-            logger.warn("Servidor de eventos '{}' nao foi encontrado nas configuracoes do Velocity!", config.getEventServer());
-            return false;
-        }
-
-        return targetServer.get().sendPluginMessage(ProxyChannel.IDENTIFIER, data);
-    }
-
     // Velocity -> Paper: START_EVENT
     public boolean sendStartEvent(String eventId, String mapId, boolean manual) {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF(ProxyChannel.MSG_START_EVENT);
-        out.writeUTF(eventId);
-        out.writeUTF(mapId != null ? mapId : "");
-        out.writeBoolean(manual);
+        try {
+            Document doc = new Document("eventId", eventId)
+                    .append("mapId", mapId != null ? mapId : "")
+                    .append("manual", manual);
 
-        boolean sent = sendToEventServer(out.toByteArray());
-        if (sent) {
-            logger.info("Enviado START_EVENT (evento={}, mapa={}, manual={})", eventId, mapId, manual);
+            Messaging.publish(ProxyChannel.MAIN_CHANNEL, ProxyChannel.SUB_START_EVENT, MessageType.DOCUMENT, doc);
+            logger.info("Publicado START_EVENT no Mainframe (evento={}, mapa={}, manual={})", eventId, mapId, manual);
+            return true;
+        } catch (Exception e) {
+            logger.error("Falha ao enviar START_EVENT via Mainframe Messaging", e);
+            return false;
         }
-        return sent;
     }
 
     // Velocity -> Paper: STOP_EVENT
     public boolean sendStopEvent() {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF(ProxyChannel.MSG_STOP_EVENT);
-
-        boolean sent = sendToEventServer(out.toByteArray());
-        if (sent) {
-            logger.info("Enviado STOP_EVENT para o servidor de eventos.");
+        try {
+            Messaging.publish(ProxyChannel.MAIN_CHANNEL, ProxyChannel.SUB_STOP_EVENT, MessageType.STRING, "stop");
+            logger.info("Publicado STOP_EVENT no Mainframe para o servidor de eventos.");
+            return true;
+        } catch (Exception e) {
+            logger.error("Falha ao enviar STOP_EVENT via Mainframe Messaging", e);
+            return false;
         }
-        return sent;
     }
 
     // Velocity -> Paper: FORCE_STOP
     public boolean sendForceStop() {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF(ProxyChannel.MSG_FORCE_STOP);
-
-        boolean sent = sendToEventServer(out.toByteArray());
-        if (sent) {
-            logger.info("Enviado FORCE_STOP para o servidor de eventos.");
+        try {
+            Messaging.publish(ProxyChannel.MAIN_CHANNEL, ProxyChannel.SUB_FORCE_STOP, MessageType.STRING, "force-stop");
+            logger.info("Publicado FORCE_STOP no Mainframe para o servidor de eventos.");
+            return true;
+        } catch (Exception e) {
+            logger.error("Falha ao enviar FORCE_STOP via Mainframe Messaging", e);
+            return false;
         }
-        return sent;
     }
 
     // Velocity -> Paper: PING
     public boolean sendPing(Consumer<Long> callback) {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF(ProxyChannel.MSG_PING);
+        try {
+            if (callback != null) {
+                pendingPingCallbacks.add(callback);
+            }
+            this.lastPingSentAt = System.currentTimeMillis();
 
-        if (callback != null) {
-            pendingPingCallbacks.add(callback);
+            Messaging.publish(ProxyChannel.MAIN_CHANNEL, ProxyChannel.SUB_PING, MessageType.LONG, this.lastPingSentAt);
+            return true;
+        } catch (Exception e) {
+            logger.error("Falha ao enviar PING via Mainframe Messaging", e);
+            return false;
         }
-        this.lastPingSentAt = System.currentTimeMillis();
-
-        return sendToEventServer(out.toByteArray());
     }
 
     // Paper -> Velocity: EVENT_STARTED

@@ -11,9 +11,10 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.minesky.api.messaging.Messaging;
 import net.mineskyproxy.addons.Emojis;
-import net.mineskyproxy.channel.PluginMessageListener;
 import net.mineskyproxy.channel.ProxyChannel;
+import net.mineskyproxy.channel.ProxyNetworkListener;
 import net.mineskyproxy.commands.*;
 import net.mineskyproxy.config.ProxyConfig;
 import net.mineskyproxy.events.PlayerEvents;
@@ -43,6 +44,9 @@ public class MineSkyProxy {
     private EventProxyManager eventProxyManager;
     private VanishManager vanishManager;
     private TellManager tellManager;
+    private ProxyNetworkListener networkListener;
+
+    private static MineSkyProxy instance;
 
     @Inject
     public MineSkyProxy(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
@@ -53,6 +57,7 @@ public class MineSkyProxy {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
+        instance = this;
         logger.info("================================================");
         logger.info("   MineSkyProxy - Inicializando Plugin Proxy    ");
         logger.info("================================================");
@@ -62,18 +67,21 @@ public class MineSkyProxy {
 
         Emojis.load(dataDirectory, logger);
 
-        proxy.getChannelRegistrar().register(ProxyChannel.IDENTIFIER);
-        logger.info("Canal '{}' registrado com sucesso no Velocity.", ProxyChannel.CHANNEL_NAME);
-
         this.rewardManager = new RewardManager(proxy, config, logger);
         this.eventProxyManager = new EventProxyManager(proxy, config, logger, rewardManager);
         this.vanishManager = new VanishManager();
         this.tellManager = new TellManager();
 
-        proxy.getEventManager().register(this, new PluginMessageListener(proxy, eventProxyManager, rewardManager, vanishManager, logger));
-        proxy.getEventManager().register(this, this);
+        if (Messaging.hasObserver()) {
+            this.networkListener = new ProxyNetworkListener(proxy, eventProxyManager, rewardManager, vanishManager, logger);
+            Messaging.registerListener("MineSkyProxy", this.networkListener);
+            logger.info("Mainframe Messaging registrado com sucesso no canal '{}'.", ProxyChannel.MAIN_CHANNEL);
+        } else {
+            logger.warn("Mainframe Messaging desabilitado ou sem conexao ativa com o MongoDB!");
+        }
+
         proxy.getEventManager().register(this, new PlayerEvents());
-        logger.info("Listeners registrados com sucesso.");
+        logger.info("Listeners do Velocity registrados com sucesso.");
 
         CommandManager commandManager = proxy.getCommandManager();
 
@@ -89,7 +97,7 @@ public class MineSkyProxy {
                 .plugin(this)
                 .build();
         commandManager.register(staffChatMeta, new StaffChatCommand(proxy, config, vanishManager, logger));
-        logger.info("Comando /staffchat (/sc, /s) registrado.");
+        logger.info("Comando /staffchat (/s) registrado.");
 
         TellCommand tellCommand = new TellCommand(proxy, tellManager, vanishManager);
         CommandMeta tellMeta = commandManager.metaBuilder("tell")
@@ -129,7 +137,6 @@ public class MineSkyProxy {
         commandManager.register(commandManager.metaBuilder(gList)
                 .aliases("globallist")
                 .build(), gList);
-
         logger.info("Comando /globallist registrado.");
 
         logger.info("MineSkyProxy inicializado e pronto para operacao!");
@@ -148,7 +155,11 @@ public class MineSkyProxy {
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         logger.info("MineSkyProxy sendo desativado...");
-        proxy.getChannelRegistrar().unregister(ProxyChannel.IDENTIFIER);
+
+        if (networkListener != null) {
+            Messaging.unregisterListener(networkListener);
+        }
+
         if (vanishManager != null) {
             vanishManager.clear();
         }
@@ -185,5 +196,9 @@ public class MineSkyProxy {
 
     public TellManager getTellManager() {
         return tellManager;
+    }
+
+    public static MineSkyProxy getInstance() {
+        return instance;
     }
 }

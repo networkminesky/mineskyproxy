@@ -7,8 +7,10 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.mineskyproxy.addons.Emojis;
 import net.mineskyproxy.config.ProxyConfig;
 import net.mineskyproxy.hooks.LuckPermsHook;
@@ -62,12 +64,10 @@ public class StaffChatCommand implements SimpleCommand {
     private Component getPlayerComponent(Player player) {
         String prefix = LuckPermsHook.getPrefix(player.getUniqueId());
 
-        Component displayName = TextUtil.parse(prefix + player.getUsername())
-                .hoverEvent(Component.text("§7Clique para teleportar-se."))
+        return TextUtil.parse(prefix + player.getUsername())
+                .hoverEvent(HoverEvent.showText(Component.text("Clique para teleportar-se.", NamedTextColor.GRAY)))
                 .clickEvent(ClickEvent.suggestCommand("/tp " + player.getUsername()))
                 .font(Style.DEFAULT_FONT);
-
-        return displayName;
     }
 
     private Component formatMessage(String msg, CommandSource sender) {
@@ -86,16 +86,24 @@ public class StaffChatCommand implements SimpleCommand {
                     .orElse("Desconhecido");
             isVanished = vanishManager.isVanished(p.getUniqueId());
         } else {
-            playerComponent = Component.text("§4§lCONSOLE");
+            playerComponent = Component.text("CONSOLE", Style.style(NamedTextColor.DARK_RED, TextDecoration.BOLD));
             serverName = "Proxy";
             isVanished = false;
         }
 
-        Component hoverInfo = Component.text("§7Servidor: §f" + serverName + "\n§7Vanish: " + (isVanished ? "§asim" : "§cnão"));
+        Component hoverInfo = Component.text()
+                .append(Component.text("Servidor: ", NamedTextColor.GRAY))
+                .append(Component.text(serverName, NamedTextColor.WHITE))
+                .append(Component.newline())
+                .append(Component.text("Vanish: ", NamedTextColor.GRAY))
+                .append(isVanished
+                        ? Component.text("sim", NamedTextColor.GREEN)
+                        : Component.text("não", NamedTextColor.RED))
+                .build();
 
-        Component packet = Component.text("§4[s] ")
+        Component packet = Component.text("[s] ", NamedTextColor.DARK_RED)
                 .append(playerComponent)
-                .append(Component.text("§8: "))
+                .append(Component.text(": ", NamedTextColor.DARK_GRAY))
                 .append(formatMessage(msg, s))
                 .hoverEvent(HoverEvent.showText(hoverInfo));
 

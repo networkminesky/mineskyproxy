@@ -133,7 +133,7 @@ public class TellCommand implements SimpleCommand {
                 .append(Component.text(":", NamedTextColor.DARK_GRAY))
                 .append(Component.space())
                 .append(emojiMessage)
-                .hoverEvent(HoverEvent.showText(Component.text("§eClique para responder rapidamente." + serverName)))
+                .hoverEvent(HoverEvent.showText(Component.text("Clique para responder rapidamente." + serverName, NamedTextColor.YELLOW)))
                 .clickEvent(ClickEvent.suggestCommand("/tell " + source.getUsername() + " "));
 
         Component paraQuemEnviou = Component.text("[", ROSA_CLARO)
@@ -160,7 +160,7 @@ public class TellCommand implements SimpleCommand {
                 .append(Component.text(" ", NamedTextColor.GRAY));
 
         try {
-            who.playSound(BELL_SOUND);
+            who.playSound(BELL_SOUND, Sound.Emitter.self());
         } catch (Exception ignored) {}
 
         source.sendMessage(paraQuemEnviou);

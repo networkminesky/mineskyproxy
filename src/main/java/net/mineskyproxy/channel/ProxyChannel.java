@@ -1,28 +1,29 @@
 package net.mineskyproxy.channel;
 
-import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
-
 public final class ProxyChannel {
 
-    public static final String CHANNEL_NAME = "minesky:proxy";
-    public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(CHANNEL_NAME);
+    // Canal principal no MongoDB Change Streams
+    public static final String MAIN_CHANNEL = "minesky:network";
 
-    // Mensagens: Velocity -> Paper
-    public static final String MSG_START_EVENT = "START_EVENT";
-    public static final String MSG_STOP_EVENT = "STOP_EVENT";
-    public static final String MSG_FORCE_STOP = "FORCE_STOP";
-    public static final String MSG_PING = "PING";
+    // Subcanais: Velocity -> Paper (MineSkyEvents / Backend)
+    public static final String SUB_START_EVENT = "start-event";
+    public static final String SUB_STOP_EVENT = "stop-event";
+    public static final String SUB_FORCE_STOP = "force-stop";
+    public static final String SUB_PING = "ping";
 
-    // Mensagens: Paper -> Velocity
-    public static final String MSG_EVENT_STARTED = "EVENT_STARTED";
-    public static final String MSG_EVENT_ENDED = "EVENT_ENDED";
-    public static final String MSG_EVENT_CANCELLED = "EVENT_CANCELLED";
-    public static final String MSG_REWARD = "REWARD";
-    public static final String MSG_EVENT_STATUS = "EVENT_STATUS";
-    public static final String MSG_PONG = "PONG";
-    public static final String MSG_CONNECT_HUB = "CONNECT_HUB";
-    public static final String MSG_VANISH_UPDATE = "VanishUpdate";
-    public static final String MSG_DISCORD = "Discord";
+    // Subcanais: Velocity -> Paper (MineSkyBridge - Survival)
+    public static final String SUB_PLAYER_VAULT = "reward-vault";
+
+    // Subcanais: Paper -> Velocity
+    public static final String SUB_EVENT_STARTED = "event-started";
+    public static final String SUB_EVENT_ENDED = "event-ended";
+    public static final String SUB_EVENT_CANCELLED = "event-cancelled";
+    public static final String SUB_REWARD = "event-reward";
+    public static final String SUB_EVENT_STATUS = "event-status";
+    public static final String SUB_PONG = "pong";
+    public static final String SUB_CONNECT_HUB = "connect-hub";
+    public static final String SUB_VANISH_UPDATE = "vanish-update";
+    public static final String SUB_DISCORD = "discord-staff";
 
     private ProxyChannel() {}
 }

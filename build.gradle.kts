@@ -11,11 +11,11 @@ repositories {
 dependencies {
     compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
     compileOnly("net.luckperms:api:5.4")
-    compileOnly("com.github.networkminesky:mainframe:1.3.1-BETA")
+    compileOnly("com.github.networkminesky.mainframe:mainframe-api:578767c23e")
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
 tasks {

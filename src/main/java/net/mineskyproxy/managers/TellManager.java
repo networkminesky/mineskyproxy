@@ -1,6 +1,5 @@
 package net.mineskyproxy.managers;
 
-import com.velocitypowered.api.proxy.Player;
 import net.minesky.api.database.PlayerDatabase;
 import net.minesky.api.database.UpdatedData;
 import net.minesky.core.databridge.callbacks.ErrorType;
