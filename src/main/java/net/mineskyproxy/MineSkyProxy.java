@@ -166,6 +166,16 @@ public class MineSkyProxy {
         logger.info("MineSkyProxy desativado.");
     }
 
+    public static final boolean GEYSER_AVAILABLE = isGeyserAvailable();
+    private static boolean isGeyserAvailable() {
+        try {
+            Class.forName("org.geysermc.geyser.api.GeyserApi");
+            return true;
+        } catch (ClassNotFoundException notFoundException) {
+            return false;
+        }
+    }
+
     public ProxyServer getServer() {
         return proxy;
     }

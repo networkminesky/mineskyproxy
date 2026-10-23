@@ -7,7 +7,9 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minesky.core.messaging.MessageType;
 import net.minesky.core.messaging.MessagingListener;
 import net.minesky.core.messaging.NetworkMessage;
+import net.mineskyproxy.MineSkyProxy;
 import net.mineskyproxy.commands.StaffChatCommand;
+import net.mineskyproxy.hooks.GeyserHook;
 import net.mineskyproxy.managers.EventProxyManager;
 import net.mineskyproxy.managers.RewardManager;
 import net.mineskyproxy.managers.VanishManager;
@@ -45,6 +47,30 @@ public class ProxyNetworkListener extends MessagingListener {
                     String mapId = doc.getString("mapId");
                     int playerCount = doc.getInteger("playerCount", 0);
                     eventManager.handleEventStarted(eventId, mapId, playerCount);
+                }
+
+                case "mineskycore:titlefade" -> {
+                    String times = message.legacyValue();
+                    logger.info("Recebido Camera Fade: "+times);
+
+                    if(!MineSkyProxy.GEYSER_AVAILABLE)
+                        return;
+
+                    logger.info("| Geyser disponível!");
+
+                    String[] args = times.split(" ");
+                    if(args.length >= 4) {
+                        try {
+                            final UUID uuid = UUID.fromString(args[0]);
+                            final float fadeIn   = Float.parseFloat(args[1]);
+                            final float duration = Float.parseFloat(args[2]);
+                            final float fadeOut   = Float.parseFloat(args[3]);
+                            GeyserHook.sendFade(uuid, fadeIn, duration, fadeOut);
+                        } catch (Exception ex) {
+                            logger.warn("Malformed Camera Fade, using: {}", times);
+                            logger.error("Fade error: "+ex.getMessage());
+                        }
+                    }
                 }
 
                 case ProxyChannel.SUB_EVENT_ENDED -> {
